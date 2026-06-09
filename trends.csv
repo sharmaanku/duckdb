@@ -1,0 +1,11 @@
+transaction_id,sale_date,store_id,store_name,state,customer_id,product_id,category,quantity,unit_price,discount_pct,payment_mode
+1001,2025-01-01,S101,Reliance Trends Delhi,Delhi,C101,P101,Apparel,2,1999,10,UPI
+1002,2025-01-01,S102,Reliance Trends Mumbai,Maharashtra,C102,P102,Footwear,1,3499,5,Card
+1003,2025-01-02,S103,Reliance Trends Bangalore,Karnataka,C103,P103,Apparel,3,1499,15,Cash
+1004,2025-01-02,S101,Reliance Trends Delhi,Delhi,C104,P104,Accessories,2,999,0,UPI
+1005,2025-01-03,S104,Reliance Trends Chennai,Tamil Nadu,C105,P105,Apparel,4,799,20,Card
+1006,2025-01-03,S102,Reliance Trends Mumbai,Maharashtra,C106,P106,Footwear,2,2499,10,UPI
+1007,2025-01-04,S103,Reliance Trends Bangalore,Karnataka,C107,P107,Accessories,5,499,5,Cash
+1008,2025-01-04,S104,Reliance Trends Chennai,Tamil Nadu,C108,P108,Apparel,2,1799,15,Card
+1009,2025-01-05,S101,Reliance Trends Delhi,Delhi,C109,P109,Footwear,1,3999,20,UPI
+1010,2025-01-05,S102,Reliance Trends Mumbai,Maharashtra,C110,P110,Apparel,3,1299,5,Card
