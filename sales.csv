@@ -1,0 +1,9 @@
+order_id,customer_id,region,year,sales
+1,101,North,2024,1000
+2,102,South,2024,1500
+3,103,North,2025,2000
+4,104,East,2025,2500
+5,105,West,2024,1800
+6,106,North,2025,3000
+7,107,South,2025,2200
+8,108,East,2024,1700
