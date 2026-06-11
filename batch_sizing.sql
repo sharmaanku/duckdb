@@ -1,111 +1,32 @@
-----------------------------------------------------
--- STEP 1 : Create Large Dataset
-----------------------------------------------------
+-- Create sample table
 
 CREATE TABLE sales AS
 SELECT
     i AS sale_id,
-    'Customer_' || i AS customer_name,
-    RANDOM()*1000 AS amount,
-    RANDOM()*100 AS discount,
-    RANDOM()*10000 AS profit,
-    RANDOM()*5000 AS tax,
-    RANDOM()*1000 AS shipping_cost,
-    RANDOM()*10000 AS inventory_cost,
-    RANDOM()*10000 AS marketing_cost,
-    RANDOM()*10000 AS misc_cost
+    RANDOM() * 1000 AS amount
 FROM range(1000000) t(i);
 
-----------------------------------------------------
--- STEP 2 : Enable Profiling
-----------------------------------------------------
-
+-- Enable profiling
 PRAGMA enable_profiling;
-PRAGMA profiling_output='query_profile.json';
 
-----------------------------------------------------
--- STEP 3 : Wide Table Query (Bad)
-----------------------------------------------------
-
-SELECT *
-FROM sales
-WHERE amount > 500;
-
-----------------------------------------------------
--- STEP 4 : Wide Table Query (Good)
--- Column Pruning
-----------------------------------------------------
-
-SELECT sale_id, amount
-FROM sales
-WHERE amount > 500;
-
-----------------------------------------------------
--- STEP 5 : Aggregation
--- Observe vectorized execution
-----------------------------------------------------
-
+-- Query 1: Scan and aggregate 1 million rows
 SELECT
-    AVG(amount),
-    SUM(profit),
-    MAX(discount)
-FROM sales;
-
-----------------------------------------------------
--- STEP 6 : Create Nested Data
-----------------------------------------------------
-
-CREATE TABLE customer_profile AS
-SELECT
-    i AS customer_id,
-    {
-      'city':'Delhi',
-      'state':'Delhi',
-      'country':'India'
-    } AS address
-FROM range(100000) t(i);
-
-----------------------------------------------------
--- STEP 7 : Read Entire Struct
-----------------------------------------------------
-
-SELECT *
-FROM customer_profile;
-
-----------------------------------------------------
--- STEP 8 : Read Only Nested Field
-----------------------------------------------------
-
-SELECT
-    address.city
-FROM customer_profile;
-
-----------------------------------------------------
--- STEP 9 : Compare Execution Plans
-----------------------------------------------------
-
-EXPLAIN
-SELECT *
-FROM sales
-WHERE amount > 500;
-
-EXPLAIN
-SELECT sale_id, amount
-FROM sales
-WHERE amount > 500;
-
-----------------------------------------------------
--- STEP 10 : Large Batch Processing Example
-----------------------------------------------------
-
-SELECT
+    COUNT(*),
     SUM(amount),
-    AVG(amount),
-    COUNT(*)
+    AVG(amount)
 FROM sales;
 
-----------------------------------------------------
--- STEP 11 : View Profiling Information
-----------------------------------------------------
+-- Query 2: Apply filter and aggregation
+SELECT
+    COUNT(*),
+    SUM(amount)
+FROM sales
+WHERE amount > 500;
 
-PRAGMA show_tables;
+-- View execution plan
+EXPLAIN ANALYZE
+SELECT
+    COUNT(*),
+    SUM(amount)
+FROM sales
+WHERE amount > 500;
