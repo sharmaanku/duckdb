@@ -1,0 +1,277 @@
+-- ============================================
+-- 1. CREATE SCHEMA
+-- ============================================
+
+CREATE SCHEMA IF NOT EXISTS hr;
+
+-- Verify
+SELECT * FROM information_schema.schemata;
+
+-- ============================================
+-- 2. CREATE TABLE
+-- ============================================
+
+CREATE TABLE hr.employee
+(
+    emp_id INTEGER,
+    emp_name VARCHAR,
+    department VARCHAR,
+    salary DECIMAL(10,2),
+    hire_date DATE
+);
+
+-- Verify
+DESCRIBE hr.employee;
+
+-- ============================================
+-- 3. INSERT DATA - METHOD 1
+-- Single Row Insert
+-- ============================================
+
+INSERT INTO hr.employee
+VALUES
+(
+    1,
+    'John',
+    'IT',
+    80000,
+    '2024-01-15'
+);
+
+-- ============================================
+-- 4. INSERT DATA - METHOD 2
+-- Multiple Rows Insert
+-- ============================================
+
+INSERT INTO hr.employee
+VALUES
+(2,'David','Finance',75000,'2023-02-20'),
+(3,'Smith','HR',65000,'2022-05-12'),
+(4,'Mary','Admin',55000,'2021-07-10'),
+(5,'Lisa','IT',95000,'2024-03-01');
+
+-- Verify Data
+SELECT * FROM hr.employee;
+
+-- ============================================
+-- 5. INSERT DATA - METHOD 3
+-- Insert from SELECT
+-- ============================================
+
+CREATE TABLE hr.employee_backup
+AS
+SELECT *
+FROM hr.employee
+WHERE 1=2;
+
+INSERT INTO hr.employee_backup
+SELECT *
+FROM hr.employee;
+
+SELECT * FROM hr.employee_backup;
+
+-- ============================================
+-- 6. INSERT DATA - METHOD 4
+-- Create and Insert Together
+-- ============================================
+
+CREATE TABLE hr.department AS
+SELECT *
+FROM
+(
+    VALUES
+    (101,'IT'),
+    (102,'Finance'),
+    (103,'HR'),
+    (104,'Admin')
+)
+AS t(dept_id,dept_name);
+
+SELECT * FROM hr.department;
+
+-- ============================================
+-- 7. TEMPORARY TABLE
+-- Session Specific
+-- ============================================
+
+CREATE TEMP TABLE temp_employee
+AS
+SELECT *
+FROM hr.employee
+WHERE department='IT';
+
+SELECT * FROM temp_employee;
+
+-- ============================================
+-- 8. TEMP TABLE USING CREATE
+-- ============================================
+
+CREATE TEMP TABLE temp_salary
+(
+    emp_id INTEGER,
+    emp_name VARCHAR,
+    salary DECIMAL(10,2)
+);
+
+INSERT INTO temp_salary
+SELECT
+    emp_id,
+    emp_name,
+    salary
+FROM hr.employee;
+
+SELECT * FROM temp_salary;
+
+-- ============================================
+-- 9. BASIC CTE
+-- ============================================
+
+WITH employee_cte AS
+(
+    SELECT *
+    FROM hr.employee
+    WHERE salary > 70000
+)
+SELECT *
+FROM employee_cte;
+
+-- ============================================
+-- 10. AGGREGATION CTE
+-- ============================================
+
+WITH dept_salary AS
+(
+    SELECT
+        department,
+        AVG(salary) avg_salary
+    FROM hr.employee
+    GROUP BY department
+)
+SELECT *
+FROM dept_salary;
+
+-- ============================================
+-- 11. MULTIPLE CTEs
+-- ============================================
+
+WITH dept_count AS
+(
+    SELECT
+        department,
+        COUNT(*) emp_count
+    FROM hr.employee
+    GROUP BY department
+),
+salary_stats AS
+(
+    SELECT
+        department,
+        AVG(salary) avg_salary
+    FROM hr.employee
+    GROUP BY department
+)
+SELECT
+    d.department,
+    d.emp_count,
+    s.avg_salary
+FROM dept_count d
+JOIN salary_stats s
+ON d.department=s.department;
+
+-- ============================================
+-- 12. RECURSIVE CTE
+-- ============================================
+
+WITH RECURSIVE numbers AS
+(
+    SELECT 1 AS n
+
+    UNION ALL
+
+    SELECT n+1
+    FROM numbers
+    WHERE n < 10
+)
+SELECT *
+FROM numbers;
+
+-- ============================================
+-- 13. ANALYTICAL QUERIES
+-- ============================================
+
+-- Rank Employees by Salary
+
+SELECT
+    emp_name,
+    department,
+    salary,
+    RANK() OVER
+    (
+        ORDER BY salary DESC
+    ) salary_rank
+FROM hr.employee;
+
+-- Dense Rank
+
+SELECT
+    emp_name,
+    salary,
+    DENSE_RANK() OVER
+    (
+        ORDER BY salary DESC
+    ) dense_rank
+FROM hr.employee;
+
+-- Row Number
+
+SELECT
+    emp_name,
+    department,
+    ROW_NUMBER() OVER
+    (
+        PARTITION BY department
+        ORDER BY salary DESC
+    ) row_num
+FROM hr.employee;
+
+-- Running Total
+
+SELECT
+    emp_name,
+    salary,
+    SUM(salary) OVER
+    (
+        ORDER BY emp_id
+    ) running_total
+FROM hr.employee;
+
+-- Department Wise Average
+
+SELECT
+    emp_name,
+    department,
+    salary,
+    AVG(salary) OVER
+    (
+        PARTITION BY department
+    ) dept_avg_salary
+FROM hr.employee;
+
+-- Highest Paid Employee
+
+SELECT *
+FROM hr.employee
+QUALIFY RANK() OVER
+(
+    ORDER BY salary DESC
+)=1;
+
+-- ============================================
+-- 14. CLEANUP
+-- ============================================
+
+DROP TABLE IF EXISTS hr.employee_backup;
+
+DROP TABLE IF EXISTS hr.department;
+
+DROP TABLE IF EXISTS hr.employee;
